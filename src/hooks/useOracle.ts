@@ -5,6 +5,15 @@ import { fetchOracleReading, fetchAllOracleReadings } from '@/lib/api';
 import type { OracleReading } from '@/types';
 import { ORACLE_REFRESH_INTERVAL_MS } from '@/lib/constants';
 
+// A tab becoming visible only triggers a refetch if at least this long has
+// passed since the last fetch, so rapid tab switching can't flood the API
+// (#519). Interval polling remains the primary refresh mechanism.
+export const VISIBILITY_REFETCH_MIN_MS = ORACLE_REFRESH_INTERVAL_MS / 2;
+
+function isStale(lastFetchAt: number): boolean {
+  return Date.now() - lastFetchAt >= VISIBILITY_REFETCH_MIN_MS;
+}
+
 export function useOracleReading(key: string | null) {
   const [reading,  setReading]  = useState<OracleReading | null>(null);
   const [loading,  setLoading]  = useState(false);
@@ -12,10 +21,12 @@ export function useOracleReading(key: string | null) {
   const isFirstLoad = useRef(true);
   const currentKeyRef = useRef(key);
   const prevKeyRef = useRef(key);
+  const lastFetchAtRef = useRef(0);
 
   const load = useCallback(async () => {
     if (!key) return;
     currentKeyRef.current = key;
+    lastFetchAtRef.current = Date.now();
     const isFirst = isFirstLoad.current;
     if (isFirst) {
       setLoading(true);
@@ -56,7 +67,9 @@ export function useOracleReading(key: string | null) {
     if (!key) return;
     void load();
     const interval = setInterval(() => { if (!document.hidden) void load(); }, ORACLE_REFRESH_INTERVAL_MS);
-    const onVisible = () => { if (!document.hidden) void load(); };
+    const onVisible = () => {
+      if (!document.hidden && isStale(lastFetchAtRef.current)) void load();
+    };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       clearInterval(interval);
@@ -73,11 +86,13 @@ export function useAllOracleReadings() {
   const [error,    setError]    = useState<string | null>(null);
   const isFirstLoad = useRef(true);
   const refetchController = useRef<AbortController | null>(null);
+  const lastFetchAtRef = useRef(0);
 
   // Guards against a slower in-flight response overwriting a newer one's
   // state (#450) -- mirrors usePolicies'/useClaims' AbortController pattern,
   // the codebase's established fix for this class of stale-response race.
   const load = useCallback(async (signal: AbortSignal) => {
+    lastFetchAtRef.current = Date.now();
     const isFirst = isFirstLoad.current;
     if (isFirst) {
       setLoading(true);
@@ -104,7 +119,9 @@ export function useAllOracleReadings() {
     const interval = setInterval(() => {
       if (!document.hidden) void load(controller.signal);
     }, ORACLE_REFRESH_INTERVAL_MS);
-    const onVisible = () => { if (!document.hidden) void load(controller.signal); };
+    const onVisible = () => {
+      if (!document.hidden && isStale(lastFetchAtRef.current)) void load(controller.signal);
+    };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
       controller.abort();
