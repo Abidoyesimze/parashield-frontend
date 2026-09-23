@@ -73,7 +73,7 @@ export default function PoliciesPage() {
         </div>
       </div>
 
-      {policies.length > 0 && (
+      {!loading && policies.length > 0 && (
         <div className="mb-6 flex flex-wrap gap-2">
           {FILTERS.map((tab) => {
             const count = filterCounts[tab];
