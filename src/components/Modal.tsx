@@ -96,7 +96,7 @@ export function Modal({ open, onClose, title, children, maxWidth = 'max-w-md' }:
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ease-out ${
+      className={`fixed inset-0 z-50 flex items-center justify-center overscroll-contain p-4 transition-all duration-300 ease-out ${
         visible
           ? 'bg-black/50 dark:bg-black/70 backdrop-blur-sm opacity-100'
           : 'bg-black/0 dark:bg-black/0 backdrop-blur-0 opacity-0'
@@ -110,7 +110,9 @@ export function Modal({ open, onClose, title, children, maxWidth = 'max-w-md' }:
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
-        className={`relative w-full ${maxWidth} rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 p-6 shadow-2xl transition-all duration-300 ease-out ${
+        // Own scroll container, capped to the viewport, with overscroll contained
+        // so reaching its top/bottom never chains to the page on iOS (#552).
+        className={`relative max-h-[calc(100dvh-2rem)] w-full ${maxWidth} overflow-y-auto overscroll-contain rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-gray-900 p-6 shadow-2xl transition-all duration-300 ease-out ${
           visible
             ? 'opacity-100 scale-100 translate-y-0'
             : 'opacity-0 scale-95 translate-y-2'

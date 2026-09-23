@@ -95,21 +95,45 @@ async function restoreArchivedState(err: StateArchivedError): Promise<string> {
   return submitSignedTransaction(signedXdr);
 }
 
+export interface StateRestoreOptions {
+  /** How many restore-and-retry rounds to attempt before giving up. */
+  maxRestores?: number;
+  /** Restore implementation; injectable for tests. */
+  restore?: (err: StateArchivedError) => Promise<unknown>;
+}
+
 /**
  * Runs a contract interaction; if its simulation reported archived state, restores
- * the footprint and retries once (issue #230). The restore costs the user one
+ * the footprint and retries (issue #230). The restore costs the user one
  * extra signature, which is the only way back from an archived entry.
+ *
+ * Retries are bounded by `maxRestores` (default 1, issue #536): if the state is
+ * archived again after the restore, we stop and surface a ContractError rather
+ * than leaking a second StateArchivedError or looping on signature prompts.
  *
  * Retrying is safe: a StateArchivedError is always thrown at simulation time, so
  * nothing has been signed or submitted when it surfaces.
  */
-export async function withStateRestore<T>(run: () => Promise<T>): Promise<T> {
-  try {
-    return await run();
-  } catch (err) {
-    if (!(err instanceof StateArchivedError)) throw err;
-    await restoreArchivedState(err);
-    return run();
+export async function withStateRestore<T>(
+  run: () => Promise<T>,
+  { maxRestores = 1, restore = restoreArchivedState }: StateRestoreOptions = {},
+): Promise<T> {
+  let restores = 0;
+  for (;;) {
+    try {
+      return await run();
+    } catch (err) {
+      if (!(err instanceof StateArchivedError)) throw err;
+      if (restores >= maxRestores) {
+        throw new ContractError(
+          'Contract data was archived again after being restored. Please try again in a moment.',
+          undefined,
+          err,
+        );
+      }
+      restores += 1;
+      await restore(err);
+    }
   }
 }
 
