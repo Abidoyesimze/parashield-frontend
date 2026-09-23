@@ -7,15 +7,18 @@ interface SearchBarProps {
   onSearch:   (query: string) => void;
   placeholder?: string;
   className?:   string;
+  /** Delay before `onSearch` fires after the user stops typing. */
+  debounceMs?:  number;
 }
 
 export function SearchBar({
   onSearch,
   placeholder = 'Search…',
   className,
+  debounceMs = 250,
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
-  const debouncedQuery   = useDebounce(query, 250);
+  const debouncedQuery   = useDebounce(query, debounceMs);
 
   useEffect(() => {
     onSearch(debouncedQuery);
@@ -35,7 +38,11 @@ export function SearchBar({
       />
       {query && (
         <button
-          onClick={() => setQuery('')}
+          onClick={() => {
+            // Clearing is a deliberate action, so reset the results immediately.
+            setQuery('');
+            onSearch('');
+          }}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-white transition-colors"
           aria-label="Clear search"
         >
