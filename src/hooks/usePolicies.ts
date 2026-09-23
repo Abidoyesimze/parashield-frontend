@@ -23,7 +23,7 @@ export function usePolicies(walletAddress: string | null) {
     }
     setError(null);
     try {
-      const data = await fetchUserPolicies(walletAddress);
+      const data = await fetchUserPolicies();
       if (signal.aborted) return;
       setPolicies(data);
     } catch (err) {
