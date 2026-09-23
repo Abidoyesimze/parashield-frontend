@@ -63,7 +63,15 @@ export function formatDate(epochSeconds: number | null | undefined): string {
   });
 }
 
-export function formatDateTime(epochSeconds: number | null | undefined): string {
+/**
+ * Formats an epoch-seconds timestamp in the viewer's local timezone.
+ * Pass `{ withTimeZone: true }` to append the zone abbreviation (e.g. "BST",
+ * "GMT+1") so users can't mistake local time for UTC (#497).
+ */
+export function formatDateTime(
+  epochSeconds: number | null | undefined,
+  { withTimeZone = false }: { withTimeZone?: boolean } = {},
+): string {
   if (epochSeconds == null) return '—';
   return new Date(epochSeconds * 1000).toLocaleString('en-GB', {
     day: '2-digit',
@@ -71,7 +79,14 @@ export function formatDateTime(epochSeconds: number | null | undefined): string 
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    ...(withTimeZone && { timeZoneName: 'short' }),
   });
+}
+
+/** Full UTC representation of an epoch-seconds timestamp, for tooltips. */
+export function formatUtcDateTime(epochSeconds: number | null | undefined): string {
+  if (epochSeconds == null) return '—';
+  return new Date(epochSeconds * 1000).toUTCString();
 }
 
 export function basisPointsToPercent(bps: number, decimals = 2): string {

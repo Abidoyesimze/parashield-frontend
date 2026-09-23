@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useOracleReading } from '@/hooks/useOracle';
 import { Skeleton } from './Skeleton';
-import { formatOracleValue, formatDateTime } from '@/lib/format';
+import { formatOracleValue, formatDateTime, formatUtcDateTime } from '@/lib/format';
 import { oracleKeyLabel, confidenceLabel, confidenceColour, parseOracleKey } from '@/lib/oracle';
 
 interface OracleDataWidgetProps {
@@ -84,8 +84,12 @@ export function OracleDataWidget({ oracleKey, className }: OracleDataWidgetProps
         <span className={`font-semibold ${confColour}`}>{confLabel} confidence</span>
       </div>
 
-      <time dateTime={new Date(reading.timestamp * 1000).toISOString()} className="mt-1 block text-[10px] text-gray-400">
-        {formatDateTime(reading.timestamp)}
+      <time
+        dateTime={new Date(reading.timestamp * 1000).toISOString()}
+        title={formatUtcDateTime(reading.timestamp)}
+        className="mt-1 block text-[10px] text-gray-400"
+      >
+        {formatDateTime(reading.timestamp, { withTimeZone: true })}
       </time>
     </div>
   );
