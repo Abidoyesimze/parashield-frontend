@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Product } from '@/types';
 import { useWallet } from '@/hooks/useWallet';
 import { displayToStroops, stroopsToDisplay, estimatePremium, basisPointsToPercent } from '@/lib/format';
@@ -37,7 +37,8 @@ export function BuyPolicyModal({ product, onClose }: Props) {
 
   const [coverage,  setCoverage]  = useState('');
   const [duration,  setDuration]  = useState(String(Math.min(30, product.maxDuration)));
-  const [oracleKey, setOracleKey] = useState('');
+  // Only used for categories without a key builder (disaster, health, ...).
+  const [manualOracleKey, setManualOracleKey] = useState('');
   const [step,      setStep]      = useState(0);
 
   // Reset to step 0 when the product changes to avoid showing stale data
@@ -71,18 +72,20 @@ export function BuyPolicyModal({ product, onClose }: Props) {
   const coverageNum   = parseFloat(coverage) || 0;
   const estimatedPrem = safeEstimatePremium(coverage, product.premiumRate);
 
-  // Automatically build oracle key based on inputs
-  useEffect(() => {
+  // Derive the oracle key during render (#543). It used to be synced into
+  // state from a useEffect, so every keystroke in lat/lng/flight fields
+  // rendered twice (input change, then setOracleKey) and the first render
+  // showed a stale key.
+  const oracleKey = useMemo(() => {
     if (product.category === 'crop') {
       const latNum = parseFloat(lat) || 0;
       const lngNum = parseFloat(lng) || 0;
-      setOracleKey(buildRainfallKey(latNum, lngNum, year, month));
-    } else if (product.category === 'flight') {
-      setOracleKey(buildFlightKey(flightNumber.trim(), flightDate));
-    } else if (product.category === 'defi') {
-      setOracleKey('defi');
+      return buildRainfallKey(latNum, lngNum, year, month);
     }
-  }, [product.category, lat, lng, year, month, flightNumber, flightDate]);
+    if (product.category === 'flight') return buildFlightKey(flightNumber.trim(), flightDate);
+    if (product.category === 'defi') return 'defi';
+    return manualOracleKey;
+  }, [product.category, lat, lng, year, month, flightNumber, flightDate, manualOracleKey]);
 
   function validateFields(): boolean {
     let isValid = true;
@@ -383,7 +386,7 @@ export function BuyPolicyModal({ product, onClose }: Props) {
                 <input
                   type="text"
                   value={oracleKey}
-                  onChange={(e) => { setOracleKey(e.target.value); setOracleKeyError(''); }}
+                  onChange={(e) => { setManualOracleKey(e.target.value); setOracleKeyError(''); }}
                   placeholder='e.g. rainfall:1.5,36.8:2026-06'
                   maxLength={32}
                   className={`${INPUT_CLASS} ${oracleKeyError ? 'border-red-500' : ''}`}
