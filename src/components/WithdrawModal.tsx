@@ -74,9 +74,16 @@ export function WithdrawModal({ pool, onClose }: Props) {
   }, [pool.poolId, address]);
 
   const amountNum     = parseFloat(amount) || 0;
+  // Reject scientific notation / non-plain-decimal input explicitly (mirrors
+  // BuyPolicyModal's coverage validation, #473/#475) rather than relying on
+  // displayToStroops's thrown TypeError alone: that error was being caught
+  // silently below and treated as "0 shares", which just disables the submit
+  // button with no explanation of why (#520).
+  const trimmedAmount = amount.trim();
+  const invalidFormat = trimmedAmount !== '' && !/^\d+(\.\d+)?$/.test(trimmedAmount);
   let   withdrawShares = 0n;
   try {
-    withdrawShares = amount ? displayToStroops(amount) : 0n;
+    withdrawShares = amount && !invalidFormat ? displayToStroops(amount) : 0n;
   } catch {
     withdrawShares = 0n;
   }
@@ -89,6 +96,7 @@ export function WithdrawModal({ pool, onClose }: Props) {
   async function handleWithdraw() {
     if (!address) return;
     if (paused) { setError('This pool is currently paused. Withdrawals are not accepted.'); return; }
+    if (invalidFormat) { setError('Enter a plain positive number (no scientific notation).'); return; }
     if (amountNum <= 0) { setError('Enter a valid share amount.'); return; }
     if (userShares !== null && withdrawShares > userShares) {
       setError('Cannot withdraw more shares than you hold.');
@@ -128,8 +136,13 @@ export function WithdrawModal({ pool, onClose }: Props) {
             placeholder="0.00"
             min={0}
             step="0.01"
-            className={INPUT_CLASS}
+            className={`${INPUT_CLASS} ${invalidFormat ? 'border-red-500' : ''}`}
           />
+          {invalidFormat && (
+            <p className="mt-1 text-xs text-red-400">
+              Enter a plain positive number (no scientific notation).
+            </p>
+          )}
           {sharesAvailable && (
             <p className="mt-1 text-xs text-gray-400">
               Available: {stroopsToDisplay(userShares.toString(), 4)} shares
