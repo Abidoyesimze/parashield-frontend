@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useWalletContext } from '@/context/WalletContext';
 import { useDebounce } from '@/hooks/useDebounce';
 import { shortenAddress } from '@/lib/format';
@@ -8,6 +8,8 @@ import { shortenAddress } from '@/lib/format';
 /** Delay before showing the connecting indicator (#486), so a connection
  * that resolves faster than this never flashes a loading state at all. */
 const CONNECTING_INDICATOR_DELAY_MS = 200;
+
+const DISMISS_TIMEOUT_MS = 5000;
 
 interface WalletButtonProps {
   className?: string;
@@ -17,6 +19,14 @@ export function WalletButton({ className }: WalletButtonProps) {
   const { address, connected, connecting, error, connect, disconnect } = useWalletContext();
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
   const showConnecting = useDebounce(connecting, CONNECTING_INDICATOR_DELAY_MS) && connecting;
+
+  const dismiss = useCallback(() => setConfirmDisconnect(false), []);
+
+  useEffect(() => {
+    if (!confirmDisconnect) return;
+    const timer = setTimeout(dismiss, DISMISS_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [confirmDisconnect, dismiss]);
 
   if (connected && address) {
     return (
@@ -36,7 +46,7 @@ export function WalletButton({ className }: WalletButtonProps) {
               Sure?
             </button>
             <button
-              onClick={() => setConfirmDisconnect(false)}
+              onClick={dismiss}
               className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-gray-400 hover:border-white/20 hover:text-white transition-all"
             >
               Cancel

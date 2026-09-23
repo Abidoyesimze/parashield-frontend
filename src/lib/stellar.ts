@@ -74,7 +74,7 @@ export async function getConnectedAddress(): Promise<WalletAddress | null> {
     const { address } = await kit.getAddress();
     return address ?? null;
   } catch {
-    return saved;
+    return null;
   }
 }
 
