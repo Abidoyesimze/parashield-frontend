@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { useOracleReading } from '../useOracle';
+import { useOracleReading, useAllOracleReadings, VISIBILITY_REFETCH_MIN_MS } from '../useOracle';
+import { fetchAllOracleReadings } from '@/lib/api';
 
 const mockFetchOracleReading = vi.fn();
 
@@ -219,5 +220,58 @@ describe('useOracleReading', () => {
 
     addSpy.mockRestore();
     removeSpy.mockRestore();
+  });
+
+  // Issue #519: rapid tab switching must not trigger a fetch per
+  // visibilitychange -- only once the last fetch is older than
+  // VISIBILITY_REFETCH_MIN_MS.
+  it('throttles visibilitychange refetches to VISIBILITY_REFETCH_MIN_MS', async () => {
+    mockFetchOracleReading.mockResolvedValue({
+      key: 'weather-abuja',
+      dataType: 'weather',
+      value: '324000000',
+      confidence: 95,
+      timestamp: 1000,
+      source: 'mock',
+    });
+    let now = 1_000_000;
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    renderHook(() => useOracleReading('weather-abuja'));
+    await waitFor(() => expect(mockFetchOracleReading).toHaveBeenCalledTimes(1));
+
+    for (let i = 0; i < 10; i++) {
+      now += 100;
+      act(() => { document.dispatchEvent(new Event('visibilitychange')); });
+    }
+    expect(mockFetchOracleReading).toHaveBeenCalledTimes(1);
+
+    now += VISIBILITY_REFETCH_MIN_MS;
+    act(() => { document.dispatchEvent(new Event('visibilitychange')); });
+    await waitFor(() => expect(mockFetchOracleReading).toHaveBeenCalledTimes(2));
+
+    nowSpy.mockRestore();
+  });
+});
+
+describe('useAllOracleReadings', () => {
+  it('throttles visibilitychange refetches to VISIBILITY_REFETCH_MIN_MS', async () => {
+    const mockFetchAll = vi.mocked(fetchAllOracleReadings);
+    mockFetchAll.mockClear();
+    let now = 5_000_000;
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    renderHook(() => useAllOracleReadings());
+    await waitFor(() => expect(mockFetchAll).toHaveBeenCalledTimes(1));
+
+    now += 100;
+    act(() => { document.dispatchEvent(new Event('visibilitychange')); });
+    expect(mockFetchAll).toHaveBeenCalledTimes(1);
+
+    now += VISIBILITY_REFETCH_MIN_MS;
+    act(() => { document.dispatchEvent(new Event('visibilitychange')); });
+    await waitFor(() => expect(mockFetchAll).toHaveBeenCalledTimes(2));
+
+    nowSpy.mockRestore();
   });
 });
