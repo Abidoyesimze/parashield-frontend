@@ -147,8 +147,14 @@ export function fetchProduct(id: string): Promise<Product> {
 
 // ── Policies ──────────────────────────────────────────────────────────────────
 
-export function fetchUserPolicies(wallet: string): Promise<Policy[]> {
-  return get<Policy[]>('/policies', { params: { wallet } });
+/**
+ * Policies for the authenticated wallet. The backend resolves the wallet from
+ * the JWT (backend #345), so it is deliberately NOT sent as a `?wallet=` query
+ * param -- query strings end up in server/proxy access logs and browser
+ * history, leaking the user's address in plaintext (#525).
+ */
+export function fetchUserPolicies(): Promise<Policy[]> {
+  return get<Policy[]>('/policies');
 }
 
 export function fetchPolicy(id: string): Promise<Policy> {
