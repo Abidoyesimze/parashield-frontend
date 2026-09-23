@@ -13,6 +13,7 @@ import { formatUSDC, formatDateTime, safeBigInt } from "@/lib/format";
 import { StatsCard } from "@/components/StatsCard";
 import { WalletAddressDisplay } from "@/components/WalletAddressDisplay";
 import { useToast } from "@/context/ToastContext";
+import { expiryNotifiedStorageKey } from "@/lib/storageKeys";
 import type { Claim } from "@/types";
 import Link from "next/link";
 
@@ -49,7 +50,8 @@ export default function DashboardPage() {
     if (loading || !connected) return;
 
     const now = Date.now();
-    const notifiedKey = `ps_expiry_notified_${address}`;
+    // Hashed so the raw wallet address isn't exposed in the storage key (#548).
+    const notifiedKey = expiryNotifiedStorageKey(address ?? '');
 
     try {
       const raw = sessionStorage.getItem(notifiedKey);
