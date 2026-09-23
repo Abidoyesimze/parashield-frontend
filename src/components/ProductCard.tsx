@@ -48,6 +48,7 @@ function ProductCardComponent({ product, compareSelected, onCompareToggle }: Pro
                 className="flex items-center gap-1.5 text-xs text-gray-400"
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
               >
                 <input
                   type="checkbox"
