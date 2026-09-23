@@ -16,6 +16,7 @@ vi.mock('@/lib/format', () => ({
     return num.toFixed(4);
   },
   formatDateTime: (ts: number) => new Date(ts * 1000).toLocaleString(),
+  formatUtcDateTime: (ts: number) => new Date(ts * 1000).toUTCString(),
 }));
 
 vi.mock('@/lib/oracle', () => ({

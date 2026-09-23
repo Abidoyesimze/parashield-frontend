@@ -5,7 +5,7 @@ import { useAllOracleReadings } from '@/hooks/useOracle';
 import { SkeletonTable } from '@/components/Skeleton';
 import { Badge } from '@/components/Badge';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { formatOracleValue, formatDateTime } from '@/lib/format';
+import { formatOracleValue, formatDateTime, formatUtcDateTime } from '@/lib/format';
 import { oracleKeyLabel, confidenceLabel, confidenceColour, confidenceIcon } from '@/lib/oracle';
 
 const PAGE_SIZE = 50;
@@ -144,7 +144,7 @@ export default function OraclePage() {
           <p>{error}</p>
           {isStale && lastSuccessRef.current && (
             <p className="mt-2 text-xs text-red-300">
-              Showing data last updated {formatDateTime(Math.floor(lastSuccessRef.current.getTime() / 1000))} — refresh failed.
+              Showing data last updated {formatDateTime(Math.floor(lastSuccessRef.current.getTime() / 1000), { withTimeZone: true })} — refresh failed.
             </p>
           )}
         </div>
@@ -238,7 +238,11 @@ export default function OraclePage() {
                     <span aria-hidden="true">{confidenceIcon(r.confidence)}</span> {r.confidence}% · {confidenceLabel(r.confidence)}
                   </td>
                   <td className="p-4 text-xs text-gray-400">{r.source}</td>
-                  <td className="p-4 text-xs text-gray-400">{formatDateTime(r.timestamp)}</td>
+                  <td className="p-4 text-xs text-gray-400">
+                    <time dateTime={new Date(r.timestamp * 1000).toISOString()} title={formatUtcDateTime(r.timestamp)}>
+                      {formatDateTime(r.timestamp, { withTimeZone: true })}
+                    </time>
+                  </td>
                 </tr>
               ))}
             </tbody>
