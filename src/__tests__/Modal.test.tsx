@@ -27,6 +27,15 @@ describe('Modal', () => {
     expect(screen.getByText('Modal content')).toBeInTheDocument();
   });
 
+  it('contains scroll inside the dialog so it cannot chain to the page (#552)', () => {
+    render(<Modal {...defaultProps} />);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.className).toContain('overflow-y-auto');
+    expect(dialog.className).toContain('overscroll-contain');
+    expect(dialog.className).toContain('max-h-[calc(100dvh-2rem)]');
+    expect(dialog.parentElement?.className).toContain('overscroll-contain');
+  });
+
   it('has aria-modal attribute', () => {
     render(<Modal {...defaultProps} />);
     expect(screen.getByRole('dialog')).toHaveAttribute('aria-modal', 'true');

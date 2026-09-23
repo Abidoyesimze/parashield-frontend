@@ -55,3 +55,10 @@ input[type=number] { -moz-appearance: textfield; }
     transform: rotate(0deg) scale(1);
   }
 }
+
+/* Set by useModalOverflow while a modal is open: stop iOS Safari from
+   chaining scroll / rubber-banding the page behind the modal (#552). */
+html.modal-scroll-locked,
+html.modal-scroll-locked body {
+  overscroll-behavior: none;
+}
