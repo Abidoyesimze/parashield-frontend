@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { use, useState } from "react";
 import { usePolicy } from "@/hooks/usePolicies";
@@ -90,18 +90,21 @@ export default function PolicyDetailClient({
   const canClaim =
     policy.status === "Active" && address === policy.policyholder;
 
+  const categoryKey = policy.product?.category as keyof typeof CATEGORY_ICONS | undefined;
+  const categoryIcon = categoryKey ? CATEGORY_ICONS[categoryKey] ?? '🛡️' : '🛡️';
+
   const breadcrumbItems = [
     { label: 'Products', href: '/' },
-    ...(policy.product?.category
+    ...(categoryKey
       ? [{
-          label: policy.product.category.charAt(0).toUpperCase() + policy.product.category.slice(1),
-          href: `/?category=${policy.product.category}`,
-          icon: CATEGORY_ICONS[policy.product.category as keyof typeof CATEGORY_ICONS],
+          label: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
+          href: `/?category=${categoryKey}`,
+          icon: categoryIcon,
         }]
       : []),
     {
       label: policy.product?.name ?? `Policy ${id.slice(0, 8)}…`,
-      icon: policy.product?.category ? CATEGORY_ICONS[policy.product.category as keyof typeof CATEGORY_ICONS] : undefined,
+      icon: categoryIcon,
     },
   ];
 
