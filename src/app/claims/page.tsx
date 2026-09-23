@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useWallet } from '@/hooks/useWallet';
 import { useClaims } from '@/hooks/useClaims';
 import { ConnectWalletPrompt } from '@/components/ConnectWalletPrompt';
@@ -25,6 +25,15 @@ export default function ClaimsPage() {
   } = useClaims(address);
   const [refreshing, setRefreshing] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+
+  useEffect(() => {
+    if (!exportOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setExportOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [exportOpen]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -62,6 +71,8 @@ export default function ClaimsPage() {
                 <button
                   onClick={() => setExportOpen((o) => !o)}
                   disabled={loading}
+                  aria-haspopup="menu"
+                  aria-expanded={exportOpen}
                   className="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 text-xs text-gray-300 hover:border-white/20 hover:text-white disabled:opacity-60 transition-colors"
                 >
                   ↓ Export
@@ -71,14 +82,18 @@ export default function ClaimsPage() {
                     <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
                     {/* Left-anchored on mobile (the controls are left-aligned there) and
                         capped to the viewport so it never overflows the screen edge (#546). */}
-                    <div className="absolute left-0 z-30 mt-1 w-40 max-w-[calc(100vw-3rem)] rounded-xl border border-white/10 bg-gray-900 py-1 shadow-xl sm:left-auto sm:right-0">
+                    <div className="absolute left-0 z-30 mt-1 w-40 max-w-[calc(100vw-3rem)] rounded-xl border border-white/10 bg-gray-900 py-1 shadow-xl sm:left-auto sm:right-0"
+                      role="menu"
+                    >
                       <button
+                        role="menuitem"
                         onClick={() => { downloadClaimsCSV(claims); setExportOpen(false); }}
                         className="w-full px-4 py-2 text-left text-xs text-gray-300 hover:bg-white/[0.05] hover:text-white transition-colors"
                       >
                         Download CSV
                       </button>
                       <button
+                        role="menuitem"
                         onClick={() => { downloadClaimsJSON(claims); setExportOpen(false); }}
                         className="w-full px-4 py-2 text-left text-xs text-gray-300 hover:bg-white/[0.05] hover:text-white transition-colors"
                       >
