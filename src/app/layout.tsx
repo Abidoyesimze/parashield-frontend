@@ -74,11 +74,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ErrorBoundary fallback={NavBarFallback}>
               <NavBar />
             </ErrorBoundary>
-            <ErrorBoundary>
-              <main id="main-content">
+            <main id="main-content">
+              <ErrorBoundary>
                 {children}
-              </main>
-            </ErrorBoundary>
+              </ErrorBoundary>
+            </main>
             <ErrorBoundary fallback={null}>
               <ToastContainer />
             </ErrorBoundary>
