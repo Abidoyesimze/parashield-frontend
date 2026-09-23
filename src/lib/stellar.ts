@@ -120,12 +120,13 @@ export async function signAuthMessage(message: string): Promise<string> {
   // Use signMessage (supported by modern wallet extensions via SEP-43).
   // The kit exposes this method at runtime even though the TypeScript types
   // may not declare it for all versions of the package.
-  const kitAny = kit as unknown as {
+  interface SignMessageCapable {
     signMessage?: (opts: { message: string; address: string }) => Promise<{ signedMessage: string }>;
-  };
+  }
+  const kitWithSign = kit as SignMessageCapable;
 
-  if (typeof kitAny.signMessage === 'function') {
-    const { signedMessage } = await kitAny.signMessage({ message, address });
+  if (typeof kitWithSign.signMessage === 'function') {
+    const { signedMessage } = await kitWithSign.signMessage({ message, address });
     return signedMessage;
   }
 
