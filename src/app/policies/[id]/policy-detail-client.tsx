@@ -142,6 +142,12 @@ export default function PolicyDetailClient({
         {[
           { label: "Coverage", value: formatUSDC(policy.coverage) },
           { label: "Premium paid", value: formatUSDC(policy.premiumPaid) },
+          {
+            label: "Premium rate",
+            value: policy.coverage > 0
+              ? `${((policy.premiumPaid / policy.coverage) * 100).toFixed(2)}%`
+              : "N/A",
+          },
         ].map(({ label, value }) => (
           <div
             key={label}

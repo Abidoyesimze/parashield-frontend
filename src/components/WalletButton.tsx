@@ -18,9 +18,26 @@ interface WalletButtonProps {
 export function WalletButton({ className }: WalletButtonProps) {
   const { address, connected, connecting, error, connect, disconnect } = useWalletContext();
   const [confirmDisconnect, setConfirmDisconnect] = useState(false);
+  const [dismissedError, setDismissedError] = useState<string | null>(null);
   const showConnecting = useDebounce(connecting, CONNECTING_INDICATOR_DELAY_MS) && connecting;
 
   const dismiss = useCallback(() => setConfirmDisconnect(false), []);
+
+  // Clear dismissed error when a new error occurs or connection succeeds
+  useEffect(() => {
+    if (error) {
+      setDismissedError(null);
+    } else if (connected) {
+      setDismissedError(null);
+    }
+  }, [error, connected]);
+
+  // Dismiss error when connecting starts (user clicked Connect again)
+  useEffect(() => {
+    if (connecting && error) {
+      setDismissedError(error);
+    }
+  }, [connecting, error]);
 
   useEffect(() => {
     if (!confirmDisconnect) return;
@@ -73,7 +90,7 @@ export function WalletButton({ className }: WalletButtonProps) {
       >
         {showConnecting ? 'Connecting…' : 'Connect Wallet'}
       </button>
-      {error && !connecting && (
+      {error && !connecting && error !== dismissedError && (
         <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
       )}
     </div>
