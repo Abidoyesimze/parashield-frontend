@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { render } from '@testing-library/react';
 import { OracleDataWidget } from '../components/OracleDataWidget';
 
 vi.mock('@/hooks/useOracle', () => ({
@@ -44,6 +45,26 @@ const mockUseOracleReading = vi.mocked(useOracleReading);
 describe('OracleDataWidget', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it('does not rerender when its parent rerenders with unchanged props', () => {
+    mockUseOracleReading.mockReturnValue({
+      reading: null,
+      loading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
+
+    const { rerender } = render(
+      <OracleDataWidget oracleKey="rainfall:1,1:2025-01" className="widget" />,
+    );
+    expect(mockUseOracleReading).toHaveBeenCalledTimes(1);
+
+    rerender(<OracleDataWidget oracleKey="rainfall:1,1:2025-01" className="widget" />);
+    expect(mockUseOracleReading).toHaveBeenCalledTimes(1);
+
+    rerender(<OracleDataWidget oracleKey="rainfall:2,2:2025-01" className="widget" />);
+    expect(mockUseOracleReading).toHaveBeenCalledTimes(2);
   });
 
   it('shows skeleton when loading', () => {

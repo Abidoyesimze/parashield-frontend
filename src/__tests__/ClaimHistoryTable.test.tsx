@@ -35,6 +35,15 @@ describe('ClaimHistoryTable', () => {
     expect(html).toContain('Processing');
   });
 
+  it('links each claim row and mobile card to its policy details', () => {
+    const html = renderToStaticMarkup(
+      <ClaimHistoryTable claims={[makeClaim({ id: 'claim-1', policyId: 'policy-123' })]} />,
+    );
+
+    expect(html.match(/href="\/policies\/policy-123"/g)).toHaveLength(4);
+    expect(html).toContain('aria-label="View policy for claim claim-1"');
+  });
+
   it('displays trigger status correctly', () => {
     const claims = [
       makeClaim({ id: 'claim-1', triggerMet: true }),

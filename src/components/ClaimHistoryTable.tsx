@@ -163,15 +163,21 @@ function ClaimHistoryTableComponent({ claims, className }: ClaimHistoryTableProp
             {sortedClaims.map((claim) => (
               <tr
                 key={claim.id}
-                className="border-b border-white/5 transition-colors hover:bg-white/[0.02]"
+                className="relative border-b border-white/5 transition-colors hover:bg-white/[0.02]"
               >
                 <td className="py-4 pr-4 font-mono text-xs text-gray-400">
-                  {claim.id.slice(0, 8)}…
+                  <Link
+                    href={`/policies/${claim.policyId}`}
+                    aria-label={`View policy for claim ${claim.id}`}
+                    className="rounded-sm transition-colors before:absolute before:inset-0 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                  >
+                    {claim.id.slice(0, 8)}…
+                  </Link>
                 </td>
                 <td className="py-4 pr-4 font-mono text-xs">
                   <Link
                     href={`/policies/${claim.policyId}`}
-                    className="text-teal-400 hover:text-teal-300 transition-colors"
+                    className="relative z-10 rounded-sm text-teal-400 transition-colors hover:text-teal-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
                   >
                     {claim.policyId.slice(0, 8)}…
                   </Link>
@@ -189,7 +195,7 @@ function ClaimHistoryTableComponent({ claims, className }: ClaimHistoryTableProp
                 </td>
                 <td className="py-4 pr-4">
                   {claim.txHash ? (
-                    <TransactionLink txHash={claim.txHash} />
+                    <TransactionLink txHash={claim.txHash} className="relative z-10" />
                   ) : (
                     <span className="text-xs text-gray-400">—</span>
                   )}
@@ -208,19 +214,23 @@ function ClaimHistoryTableComponent({ claims, className }: ClaimHistoryTableProp
         {sortedClaims.map((claim) => (
           <div
             key={claim.id}
-            className="rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3"
+            className="relative rounded-xl border border-white/10 bg-white/[0.02] p-4 space-y-3 transition-colors hover:border-white/20"
           >
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-gray-400">
+              <Link
+                href={`/policies/${claim.policyId}`}
+                aria-label={`View policy for claim ${claim.id}`}
+                className="rounded-sm font-mono text-xs text-gray-400 before:absolute before:inset-0 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+              >
                 {claim.id.slice(0, 8)}…
-              </span>
+              </Link>
               <Badge label={claim.status} />
             </div>
             <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
               <span className="text-gray-400">Policy</span>
               <Link
                 href={`/policies/${claim.policyId}`}
-                className="font-mono text-teal-400 hover:text-teal-300 transition-colors truncate"
+                className="relative z-10 truncate rounded-sm font-mono text-teal-400 transition-colors hover:text-teal-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
               >
                 {claim.policyId.slice(0, 8)}…
               </Link>
@@ -237,7 +247,7 @@ function ClaimHistoryTableComponent({ claims, className }: ClaimHistoryTableProp
               <span className="text-gray-400">Tx</span>
               <span>
                 {claim.txHash ? (
-                  <TransactionLink txHash={claim.txHash} />
+                  <TransactionLink txHash={claim.txHash} className="relative z-10" />
                 ) : (
                   <span className="text-gray-400">—</span>
                 )}
