@@ -1,6 +1,7 @@
 import type { Product } from '@/types';
 import { basisPointsToPercent, formatUSDC } from '@/lib/format';
 import { CATEGORY_ICONS } from '@/lib/constants';
+import { memo } from 'react';
 import { Modal } from './Modal';
 
 interface Props {
@@ -18,7 +19,7 @@ const FIELDS = [
   { label: 'Status',       getValue: (p: Product) => p.status },
 ];
 
-export function CompareModal({ products, onClose }: Props) {
+function CompareModalComponent({ products, onClose }: Props) {
   return (
     <Modal open={true} onClose={onClose} title="Compare Products" maxWidth="max-w-3xl">
       <div className="overflow-x-auto">
@@ -52,3 +53,5 @@ export function CompareModal({ products, onClose }: Props) {
     </Modal>
   );
 }
+
+export const CompareModal = memo(CompareModalComponent);

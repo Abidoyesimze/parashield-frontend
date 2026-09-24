@@ -93,13 +93,22 @@ export function CategoryFilter({ value, onChange, className }: CategoryFilterPro
       {CATEGORIES.map((cat, i) => (
         <CategoryTab
           key={cat}
-          cat={cat}
-          index={i}
-          selected={value === cat}
-          onSelect={handleSelect}
-          onKeyDown={handleKeyDown}
-          setRef={setRef}
-        />
+          ref={(el) => { tabRefs.current[i] = el; }}
+          role="tab"
+          aria-selected={value === cat}
+          aria-pressed={value === cat}
+          tabIndex={value === cat ? 0 : -1}
+          onClick={() => onChange(cat)}
+          onKeyDown={(e) => handleKeyDown(e, i)}
+          className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-400 ${
+            value === cat
+              ? 'bg-teal-500 text-white'
+              : 'border border-white/10 text-gray-400 hover:border-white/20 hover:text-white'
+          }`}
+        >
+          {cat !== 'all' && <span>{CATEGORY_ICONS[cat]}</span>}
+          {cat === 'all' ? 'All policies' : CATEGORY_LABELS[cat]}
+        </button>
       ))}
     </div>
   );
