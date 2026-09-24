@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useState, useCallback } from 'react';
+import { memo, useState, useCallback } from 'react';
 import { useOracleReading } from '@/hooks/useOracle';
 import { Skeleton } from './Skeleton';
 import { formatOracleValue, formatDateTime, formatUtcDateTime } from '@/lib/format';
@@ -11,7 +11,7 @@ interface OracleDataWidgetProps {
   className?: string;
 }
 
-export function OracleDataWidget({ oracleKey, className }: OracleDataWidgetProps) {
+function OracleDataWidgetComponent({ oracleKey, className }: OracleDataWidgetProps) {
   const { reading, loading, error, refetch } = useOracleReading(oracleKey);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -94,3 +94,10 @@ export function OracleDataWidget({ oracleKey, className }: OracleDataWidgetProps
     </div>
   );
 }
+
+export const OracleDataWidget = memo(
+  OracleDataWidgetComponent,
+  (previous, next) => previous.oracleKey === next.oracleKey && previous.className === next.className,
+);
+
+OracleDataWidget.displayName = 'OracleDataWidget';

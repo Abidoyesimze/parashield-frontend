@@ -182,7 +182,13 @@ export default function DashboardPage() {
                     className="border-b border-white/5 transition-colors hover:bg-white/[0.02]"
                   >
                     <td className="px-6 py-4 font-mono text-xs text-gray-400">
-                      {claim.id.slice(0, 8)}…
+                      <Link
+                        href={`/policies/${claim.policyId}`}
+                        aria-label={`View policy for claim ${claim.id}`}
+                        className="rounded-sm text-teal-400 transition-colors hover:text-teal-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400"
+                      >
+                        {claim.id.slice(0, 8)}…
+                      </Link>
                     </td>
                     <td className="px-6 py-4 text-xs text-gray-400">
                       {formatDateTime(claim.submittedAt)}

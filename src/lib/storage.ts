@@ -6,10 +6,24 @@ function get(key: string): string | null {
   catch { return null; }
 }
 
-function set(key: string, value: string): void {
-  if (!isClient) return;
-  try { localStorage.setItem(key, value); }
-  catch { /* quota exceeded — ignore */ }
+function isQuotaExceededError(error: unknown): boolean {
+  return error instanceof DOMException && (
+    error.name === 'QuotaExceededError' ||
+    error.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+    error.code === 22 ||
+    error.code === 1014
+  );
+}
+
+function set(key: string, value: string): boolean {
+  if (!isClient) return false;
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    if (isQuotaExceededError(error)) return false;
+    return false;
+  }
 }
 
 function remove(key: string): void {
@@ -25,9 +39,9 @@ function getJSON<T>(key: string): T | null {
   catch { return null; }
 }
 
-function setJSON<T>(key: string, value: T): void {
-  try { set(key, JSON.stringify(value)); }
-  catch { /* ignore */ }
+function setJSON<T>(key: string, value: T): boolean {
+  try { return set(key, JSON.stringify(value)); }
+  catch { return false; }
 }
 
 function getSession(key: string): string | null {
@@ -36,10 +50,15 @@ function getSession(key: string): string | null {
   catch { return null; }
 }
 
-function setSession(key: string, value: string): void {
-  if (!isClient) return;
-  try { sessionStorage.setItem(key, value); }
-  catch { /* quota exceeded — ignore */ }
+function setSession(key: string, value: string): boolean {
+  if (!isClient) return false;
+  try {
+    sessionStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    if (isQuotaExceededError(error)) return false;
+    return false;
+  }
 }
 
 function removeSession(key: string): void {
