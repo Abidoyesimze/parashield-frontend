@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchBarProps {
@@ -19,6 +20,14 @@ export function SearchBar({
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
   const debouncedQuery   = useDebounce(query, debounceMs);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname === '/') {
+      setQuery('');
+      onSearch('');
+    }
+  }, [pathname, onSearch]);
 
   useEffect(() => {
     onSearch(debouncedQuery);

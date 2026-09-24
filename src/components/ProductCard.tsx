@@ -76,12 +76,16 @@ function ProductCardComponent({ product, compareSelected, onCompareToggle }: Pro
           <TriggerConditionBadge product={product} />
         </div>
 
-        <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+        <dl className="mt-4 grid grid-cols-3 gap-3 text-sm">
           <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-3">
             <dt className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400">Premium</dt>
             <dd className="mt-0.5 font-semibold text-teal-400">
               {basisPointsToPercent(product.premiumRate)}
             </dd>
+          </div>
+          <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-3">
+            <dt className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400">Min Coverage</dt>
+            <dd className="mt-0.5 font-semibold text-gray-950 dark:text-white">{formatUSDC(product.coverageMin)}</dd>
           </div>
           <div className="rounded-xl bg-gray-100 dark:bg-white/5 p-3">
             <dt className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400">Max Coverage</dt>

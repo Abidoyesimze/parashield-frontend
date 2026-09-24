@@ -40,6 +40,7 @@ export default function HomePage() {
   const [category, setCategory]         = useState<CategoryFilterValue>('all');
   const [compareIds, setCompareIds]     = useState<Set<string>>(new Set());
   const [compareOpen, setCompareOpen]   = useState(false);
+  const handleCloseCompare = useCallback(() => setCompareOpen(false), []);
 
   const toggleCompare = useCallback((product: Product) => {
     setCompareIds((prev) => {
@@ -264,7 +265,7 @@ export default function HomePage() {
         {compareOpen && compareProducts.length >= 2 && (
           <CompareModal
             products={compareProducts}
-            onClose={() => setCompareOpen(false)}
+            onClose={handleCloseCompare}
           />
         )}
       </section>

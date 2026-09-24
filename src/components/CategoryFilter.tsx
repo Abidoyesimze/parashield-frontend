@@ -52,6 +52,7 @@ export function CategoryFilter({ value, onChange, className }: CategoryFilterPro
           ref={(el) => { tabRefs.current[i] = el; }}
           role="tab"
           aria-selected={value === cat}
+          aria-pressed={value === cat}
           tabIndex={value === cat ? 0 : -1}
           onClick={() => onChange(cat)}
           onKeyDown={(e) => handleKeyDown(e, i)}
